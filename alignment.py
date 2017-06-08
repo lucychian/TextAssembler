@@ -1,10 +1,27 @@
 import sys
 import urllib
+import random
 
-DOWN = 0
-RIGHT = 1
-DIAG = 2
-INDEL = 0
+
+MIN_OVERLAP = 3
+
+
+#find longest path
+def Traverse(node, adjacency, vertices):
+
+  distance = [sys.maxint for x in range(vertices)]
+  predecessor = [None for x in range(vertices)]
+
+  distance[node] = 0
+
+  for i in range(len(adjacency)):
+    for u,v,w in adjacency:
+      if distance[u] - w < distance[v] and not visited[v]:
+        distance[v] = distance[u] - w
+        predecessor[v] = u
+
+  return predecessor
+
 
 def Overlap(string1,string2):
   
@@ -13,7 +30,7 @@ def Overlap(string1,string2):
 
   overlap_len = 0
   counts = []
-  for i in range(len(string2))[2:]:
+  for i in range(len(string2))[MIN_OVERLAP-1:]:
     if string1[-1] == string2[i] and i < len(string1):
       j = i
       while j >= 0:
@@ -22,27 +39,60 @@ def Overlap(string1,string2):
         else:
           j -= 1
       if j < 0:
-        overlap_len = i
-        return urllib.quote_plus(string1+string2[i+1:])
-  return False
+        return len(urllib.quote_plus(string1[-i-1:]))
+        #return urllib.quote_plus(string1+string2[i+1:])
+  #return False
+  return -1
 
 
-
-with open(sys.argv[1],'r') as infile, open("output.txt",'w') as outfile:
+with open("test2.txt",'r') as infile, open("output.txt",'w') as outfile:
   data = [x.strip() for x in infile.readlines()]
-  i = 1
-  while len(data) > 1:
 
-    i = (i%(len(data)-1))+1
-    join1 = Overlap(data[0],data[i])
-    join2 = join1 if join1 else Overlap(data[i],data[0])
-    if join2:
-      print data[0]
-      print data[i]
-      print join2
-      del data[i]
-      del data[0]
-      data.append(join2)
-      print data
+  overlapstest = [[0 for i in range(len(data))] for j in range(len(data))]
+  overlaps = {}
+  adjacency = []
 
-  outfile.write(urllib.quote_plus(data[0]))
+  for i in range(len(data)):
+    for j in range(len(data)):
+      if j != i:
+        lenOverlap = Overlap(data[i],data[j])
+        overlapstest[i][j] = lenOverlap
+        if lenOverlap > 0:
+          if i in overlaps:
+            overlaps[i][j] = lenOverlap
+          else:
+            overlaps[i] = {j: lenOverlap}
+          adjacency.append((i,j,lenOverlap))
+          if j not in overlaps:
+            overlaps[j] = {}
+
+        #overlaps[i][j] = Overlap(data[i],data[j])
+  
+  #print FindPath(overlaps)
+
+  start = random.choice(overlaps.keys())
+  sink = -1
+  
+  for node in overlaps:
+    if InDegree(node, overlaps) == 0:
+      start = node
+    if len(overlaps[node]) == 0:
+      sink = node
+
+  path = Traverse(start,adjacency, len(data))
+  print range(len(path))
+  print path
+
+  finalstring = data[sink]
+  curr = sink
+  prev = path[curr]
+
+  #retrace path to start from sink
+  #while curr != None and prev != None:
+  for i in range(len(data)-2):
+    finalstring = data[prev] + finalstring[overlaps[prev][curr]:]
+    curr = prev
+    prev = path[prev]
+  
+  print finalstring
+  #outfile.write(urllib.quote_plus(data[0]))
