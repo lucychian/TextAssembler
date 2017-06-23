@@ -9,7 +9,7 @@ if len(sys.argv) == 2:
 
 #read from stdin
 elif len(sys.argv) == 1:
-  data = sys.stdin.readlines()
+  data = [x.strip() for x in sys.stdin.readlines()]
   print GetTextFromOverlaps(data)
 #error
 else:
