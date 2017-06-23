@@ -3,11 +3,8 @@ import random
 import urllib
 import copy
 
-#GET CONTIGS FROM OVERLAP GRAPH
-#MAKE DE BRUIJN GRAPH FROM CONTIGS this aint gonna work lmao
-
 MIN_OVERLAP = 3
-k = 10
+k = 4
 
 def Composition(k, Text):
   kmers = []
@@ -18,6 +15,7 @@ def Composition(k, Text):
 def DeBruijnGraph(k, Text, adjacency):
   Patterns = Composition(k-1,Text)
   Patterns = [urllib.quote_plus(x) for x in Patterns]
+
   for i in range(len(Patterns)-1):
     if Patterns[i] not in adjacency:
       adjacency[Patterns[i]] = [Patterns[i+1]]
@@ -25,6 +23,7 @@ def DeBruijnGraph(k, Text, adjacency):
       adjacency[Patterns[i]].append(Patterns[i+1])
     if Patterns[i+1] not in adjacency:
       adjacency[Patterns[i+1]] = []
+
   return adjacency
 
 def Overlap(string1,string2):
@@ -51,20 +50,26 @@ def Overlap(string1,string2):
 def GetContigs(graph,data):
 
   contigs = []
+  inContig = []
 
   for node in graph:
     if not (InDegree(node, graph) == 1 and len(graph[node]) == 1):
-      if len(graph[node]) > 0:
-        for neighbor in graph[node]:
+      for neighbor in graph[node]:
+        if len(graph[neighbor]) == 1 and InDegree(neighbor, graph) == 1:
+          inContig.append(node)
           path = data[node] + data[neighbor][graph[node][neighbor]:]
-          #path = data[neighbor]
           curr = neighbor
+          prev = neighbor
           while InDegree(curr, graph) == 1 and len(graph[curr]) == 1:
+            inContig.append(curr)
             prev = curr
             curr = graph[curr].keys()[0]
             path += data[curr][graph[prev][curr]:]
           contigs.append(path)
-    
+  
+  for node in graph:
+    if node not in inContig:
+      contigs.append(data[node])
   return contigs
 
 def InDegree(Node, Graph):
@@ -95,15 +100,10 @@ def EulerianPath(adjacency):
   return circuit[::-1]
 
 
-with open(sys.argv[1],'r') as infile, open("output.txt",'w') as outfile:
-  data = [x.strip() for x in infile.readlines()]
-
+def GetTextFromOverlaps(data):
   graph = {}
   overlaps = {}
-
-  for line in data:
-    graph = DeBruijnGraph(k,urllib.unquote_plus(line),graph)
-
+  
   for i in range(len(data)):
     for j in range(len(data)):
       if j != i:
@@ -115,27 +115,27 @@ with open(sys.argv[1],'r') as infile, open("output.txt",'w') as outfile:
             overlaps[i] = {j: lenOverlap}
           if j not in overlaps:
             overlaps[j] = {}
-
-
+  
   for line in GetContigs(overlaps,data):
     graph = DeBruijnGraph(k,urllib.unquote_plus(line),graph)
-
+  
   temp = copy.deepcopy(graph)
   path = EulerianPath(temp)
-
-  print path
 
   path = [urllib.unquote_plus(x) for x in path]
   original_text = path[0]
   
   for node in path[1:]:
-    
-    #print "end: " + urllib.quote_plus(original_text[-k+1:])
-    #print "append: " + urllib.quote_plus(node)
 
     if node != original_text[-k+1:]:
       original_text = original_text[:-k+2] + node
 
-    #print "final: " + urllib.quote_plus(original_text)
-  print urllib.quote_plus(original_text)
-  outfile.write(original_text)
+  return original_text
+
+
+
+
+with open("tests/Shake-frags.txt",'r') as infile, open("output.txt",'w') as outfile:
+  data = [x.strip() for x in infile.readlines()]
+  print GetTextFromOverlaps(data)
+

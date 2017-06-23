@@ -1,30 +1,21 @@
 from flask import Flask
 from flask import request
 from flask import render_template
+from flask_bootstrap import Bootstrap
 
-from wtforms import Form, TextAreaField, SubmitField
 
 app = Flask(__name__)
 
-
-class Form(Form):
-  strings = TextAreaField('Strings')
-  submit = SubmitField('Submit')
-
-
-@app.route('/', methods=['GET','POST'])
+@app.route('/', methods=['GET'])
 def index():
-
-  form = Form()
-  if request.method == 'POST':
-    #submit to dbgraph.py
-    strings = request.form['strings']
-    #return strings
-    return render_template("index.html", form=form)
-  else:
-    return render_template("index.html", form=form)
+  return render_template("index.html")
 
 
+@app.route("/results", methods=['POST','GET'])
+def results():
+  strings = request.form['strings']
+  return render_template("results.html", results=strings)
 
 if __name__ == "__main__":
+  Bootstrap(app)
   app.run()
