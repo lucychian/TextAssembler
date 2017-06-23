@@ -101,6 +101,7 @@ def EulerianPath(adjacency):
 
 
 def GetTextFromOverlaps(data):
+
   graph = {}
   overlaps = {}
   
@@ -130,12 +131,11 @@ def GetTextFromOverlaps(data):
     if node != original_text[-k+1:]:
       original_text = original_text[:-k+2] + node
 
-  return original_text
+  return urllib.unquote_plus(original_text)
 
 
-
-
-with open("tests/Shake-frags.txt",'r') as infile, open("output.txt",'w') as outfile:
+'''
+with open("test2.txt",'r') as infile:
   data = [x.strip() for x in infile.readlines()]
   print GetTextFromOverlaps(data)
-
+'''

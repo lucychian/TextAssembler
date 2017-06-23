@@ -1,9 +1,28 @@
+<!DOCTYPE html>
 <html>
 
-  <h2>Text Assembler</h2>
+  <head>
+  
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 
-    {% for result in results %}
-      {{ result }}
-    {% endfor %}
+    <!-- jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js">
+    </script>
+
+    <!-- Latest compiled JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js">
+    </script>
+    <title>Text Assembler</title>
+    <div class="page-header col-md-12">
+      <h2>Text Assembler</h2>
+    </div>
+  </head>
+
+  <body>
+    <div class = "content col-lg-4">
+      <pre>{{results}}</pre>
+    </div>
+  </body>
 
 </html>

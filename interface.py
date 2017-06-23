@@ -1,21 +1,32 @@
 from flask import Flask
 from flask import request
 from flask import render_template
-from flask_bootstrap import Bootstrap
+from dbgraph import GetTextFromOverlaps
+import urllib
 
 
 app = Flask(__name__)
 
-@app.route('/', methods=['GET'])
+
+#Home page
+@app.route('/')
 def index():
   return render_template("index.html")
 
-
-@app.route("/results", methods=['POST','GET'])
+#Results page
+@app.route("/results", methods=['GET','POST'])
 def results():
   strings = request.form['strings']
-  return render_template("results.html", results=strings)
+
+  #parse data
+  data = [x.strip() for x in strings.split("\n")]
+
+  #assemble fragments
+  result = GetTextFromOverlaps(data)
+
+  #display on results page
+  return render_template("results.html", results=result)
+  
 
 if __name__ == "__main__":
-  Bootstrap(app)
   app.run()
