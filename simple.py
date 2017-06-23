@@ -1,3 +1,6 @@
+#Overlap graph reconstruction of fragments
+#Simplify graph by finding contigs and then traverse with brute force
+
 import sys
 import urllib
 import random
@@ -120,7 +123,7 @@ def GetContigs(graph,data):
   return contigs
 
 
-with open("tests/Shake-frags.txt",'r') as infile, open("output.txt",'w') as outfile:
+with open(sys.argv[1],'r') as infile:
   data = [x.strip() for x in infile.readlines()]
 
   overlaps = OverlapDict(data)
@@ -128,20 +131,12 @@ with open("tests/Shake-frags.txt",'r') as infile, open("output.txt",'w') as outf
   contigs = GetContigs(overlaps,data)
   simplified = OverlapDict(contigs)
 
-  overlaps2 = OverlapDict(contigs)
-  contigs2 = GetContigs(overlaps2, contigs)
-  simplified2 = OverlapDict(contigs2)
-
-  print "Simplified by " + str(len(overlaps) - len(simplified)) + " nodes"
-  print "Simplified by " + str(len(simplified) - len(simplified2)) + " nodes"
-
   source, sink = FindSourceSink(simplified)
 
   print "Found Source: " + str(source)
   print "Found Sink: " + str(sink)
 
-  #path = bfs(simplified, source, sink)
-  path = [1]
+  path = bfs(simplified, source, sink)
   finalstring = contigs[path[0]]
   prev = path[0]
 
@@ -149,4 +144,4 @@ with open("tests/Shake-frags.txt",'r') as infile, open("output.txt",'w') as outf
     finalstring += contigs[i][simplified[prev][i]:]
     prev = i
 
-  outfile.write(urllib.unquote_plus(finalstring))
+  print urllib.unquote_plus(finalstring)

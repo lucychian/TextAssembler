@@ -6,11 +6,25 @@ import copy
 MIN_OVERLAP = 3
 k = 4
 
+
+#Generate kmer composition of text
+#parameters: k - int length of kmer
+#            Text - string fragment of text
+#return: list of kmers
+
 def Composition(k, Text):
   kmers = []
   for i in range(len(Text)-k+1):
     kmers.append(Text[i:i+k])
   return kmers
+
+
+
+#Add kmer composition of fragment to DeBruijn graph
+#parameters: k - int length of kmer
+#            Text - string fragment of text to add to graph
+#            adjacency - dictionary DeBruijn graph
+#return: DeBruijn graph with fragment added
 
 def DeBruijnGraph(k, Text, adjacency):
   Patterns = Composition(k-1,Text)
@@ -25,6 +39,13 @@ def DeBruijnGraph(k, Text, adjacency):
       adjacency[Patterns[i+1]] = []
 
   return adjacency
+
+
+
+#Find length of overlap between two strings
+#parameters: string1 - prefix string 
+#            string2 - suffix string
+#return: length of overlap, or -1 if not overlapping
 
 def Overlap(string1,string2):
   
@@ -46,6 +67,12 @@ def Overlap(string1,string2):
         
   return -1
 
+
+
+#Minimize number of fragments by finding non-branching paths
+#parameters: graph - dictionary adjacency graph
+#            data - set of fragments
+#returns: new list of fragments with contigs
 
 def GetContigs(graph,data):
 
@@ -70,10 +97,26 @@ def GetContigs(graph,data):
   for node in graph:
     if node not in inContig:
       contigs.append(data[node])
+
   return contigs
+
+
+
+#Find in degree of node (number of nodes pointing to it)
+#parameters: Node - int to search for
+#            Graph - adjacency list to search in
+#returns: number of edges pointing to Node
 
 def InDegree(Node, Graph):
   return sum(Node in x for x in Graph.values())
+
+
+
+
+#Find Eulerian path in DeBruijn graph, starting from node that
+#has no incoming edges
+#parameters: adjacency - dictionary adjacency list
+#returns: list of nodes in order of traversal
 
 def EulerianPath(adjacency):
   
@@ -100,6 +143,12 @@ def EulerianPath(adjacency):
   return circuit[::-1]
 
 
+
+
+#Given set of fragments with overlapping ends, find the original text
+#parameters: data - list of fragments (strings)
+#returns: re-assembled source text
+
 def GetTextFromOverlaps(data):
 
   graph = {}
@@ -124,18 +173,16 @@ def GetTextFromOverlaps(data):
   path = EulerianPath(temp)
 
   path = [urllib.unquote_plus(x) for x in path]
-  original_text = path[0]
   
-  for node in path[1:]:
+  if path:
+    original_text = path[0]
+    
+    for node in path[1:]:
 
-    if node != original_text[-k+1:]:
-      original_text = original_text[:-k+2] + node
+      if node != original_text[-k+1:]:
+        original_text = original_text[:-k+2] + node
 
-  return urllib.unquote_plus(original_text)
+    return urllib.unquote_plus(original_text)
 
-
-'''
-with open("test2.txt",'r') as infile:
-  data = [x.strip() for x in infile.readlines()]
-  print GetTextFromOverlaps(data)
-'''
+  else:
+    return None

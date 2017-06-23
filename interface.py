@@ -24,6 +24,9 @@ def results():
   #assemble fragments
   result = GetTextFromOverlaps(data)
 
+  if not result:
+    result = "Error assembling original text."
+
   #display on results page
   return render_template("results.html", results=result)
   
